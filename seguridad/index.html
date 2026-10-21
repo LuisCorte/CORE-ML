@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Inventario y Ventas CORE-ML</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-900 text-gray-200 min-h-screen font-sans">
+    
+   <div id="auth-container" class="w-full max-w-sm mx-auto p-8 rounded-xl shadow-2xl bg-gray-800 mt-10">
+    <div id="login-section" class="auth-card">
+        <h1 class="text-3xl font-bold text-center mb-6 text-white">Inicia Sesión</h1>
+        <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full p-3 mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="password" id="login-password" placeholder="Contraseña" class="w-full p-3 mb-6 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button id="login-button" class="w-full p-3 mb-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all">Iniciar Sesión</button>
+        <p class="text-center text-sm">
+            <a href="#" id="forgot-password-link" class="text-blue-400 hover:underline font-semibold">¿Olvidaste tu contraseña?</a>
+        </p>
+        <p class="text-center text-sm mt-2">¿No tienes una cuenta?
+            <a href="#" id="show-register" class="text-blue-400 hover:underline font-semibold">Regístrate</a>
+        </p>
+    </div>
+    <div id="register-section" class="auth-card hidden">
+        <h1 class="text-3xl font-bold text-center mb-6 text-white">Crear Cuenta</h1>
+        <input type="email" id="register-email" placeholder="Correo electrónico" class="w-full p-3 mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="password" id="register-password" placeholder="Contraseña" class="w-full p-3 mb-6 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button id="register-button" class="w-full p-3 mb-4 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all">Registrarme</button>
+        <p class="text-center text-sm">¿Ya tienes una cuenta? <a href="#" id="show-login" class="text-blue-400 hover:underline font-semibold">Inicia Sesión</a></p>
+    </div>
+</div>
+    
+    <div id="app-section" class="w-full min-h-screen hidden">
+        <header class="bg-gray-950 text-white p-4 shadow-xl">
+    <div class="container mx-auto flex flex-col md:flex-row justify-between items-center relative">
+        <div class="flex justify-between items-center w-full md:w-auto">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                <img src="logo.png" alt="Logo de la Empresa" class="h-24 shadow-md rounded-full border-2 border-white">
+                <h1 class="text-2xl font-bold">CORE - ML</h1>
+            </div>
+            <button id="menu-button" class="md:hidden text-white focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path>
+                </svg>
+            </button>
+        </div>
+        <nav id="main-nav" class="hidden flex-col md:flex md:flex-row space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto mt-4 md:mt-0">
+            <button id="inventory-tab-button" class="bg-gray-700 text-white font-semibold px-4 py-2 rounded-lg transition-all">Inventario</button>
+            <button id="add-product-tab-button" class="text-gray-400 hover:bg-gray-700 hover:text-white font-semibold px-4 py-2 rounded-lg transition-all">Agregar Producto</button>
+            <button id="sales-tab-button" class="text-gray-400 hover:bg-gray-700 hover:text-white font-semibold px-4 py-2 rounded-lg transition-all">Ventas</button>
+            <button id="users-tab-button" class="text-gray-400 hover:bg-gray-700 hover:text-white font-semibold px-4 py-2 rounded-lg transition-all">Usuarios</button>
+            <button id="reports-tab-button" class="text-gray-400 hover:bg-gray-700 hover:text-white font-semibold px-4 py-2 rounded-lg transition-all">Reportes</button>
+            <button id="logout-button" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 transition-all">Cerrar Sesión</button>
+        </nav>
+    </div>
+</header>
+
+        <div id="main-content" class="container mx-auto p-6">
+            <div id="inventory-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-7xl mx-auto my-8">
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Inventario de Productos</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                    <input type="text" id="search-input" placeholder="Buscar productos..." class="w-full md:w-1/3 p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="flex space-x-2">
+                        <button id="edit-product-button" disabled class="bg-gray-500 text-white px-4 py-2 rounded-lg transition-all cursor-not-allowed">Editar Producto</button>
+                        <button id="delete-product-button" disabled class="bg-gray-500 text-white px-4 py-2 rounded-lg transition-all cursor-not-allowed">Borrar Producto</button>
+                    </div>
+                </div>
+                <p id="selected-product-message" class="text-sm text-center text-gray-400 mb-4">Selecciona un producto para habilitar las acciones.</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-gray-800 rounded-xl">
+                        <thead>
+                            <tr class="bg-gray-700 text-gray-400 uppercase text-sm leading-normal">
+                                <th class="py-3 px-4 text-left rounded-tl-xl">Imagen</th>
+                                <th class="py-3 px-4 text-left">Nombre</th>
+                                <th class="py-3 px-4 text-left">Marca</th>
+                                <th class="py-3 px-4 text-left">Categoría</th>
+                                <th class="py-3 px-4 text-left">Proveedor</th>
+                                <th class="py-3 px-4 text-left">Stock</th>
+                                <th class="py-3 px-4 text-left">Costo</th>
+                                <th class="py-3 px-4 text-left rounded-tr-xl">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body" class="text-sm font-light">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="product-form-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-4xl mx-auto my-8 hidden">
+                <h2 id="product-form-title" class="text-2xl font-semibold text-center mb-6 text-white">Agregar Nuevo Producto</h2>
+                <form id="product-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="product-name" class="block text-sm font-medium text-gray-400">Nombre del Producto <span class="required-star">*</span></label>
+                        <input type="text" id="product-name" required class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-brand" class="block text-sm font-medium text-gray-400">Marca</label>
+                        <input type="text" id="product-brand" class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-category" class="block text-sm font-medium text-gray-400">Categoría</label>
+                        <input type="text" id="product-category" class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-supplier" class="block text-sm font-medium text-gray-400">Proveedor</label>
+                        <input type="text" id="product-supplier" class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-stock" class="block text-sm font-medium text-gray-400">Stock <span class="required-star">*</span></label>
+                        <input type="number" id="product-stock" required class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-cost" class="block text-sm font-medium text-gray-400">Precio de Compra (Costo) <span class="required-star">*</span></label>
+                        <input type="number" id="product-cost" required step="0.01" class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-price" class="block text-sm font-medium text-gray-400">Precio de Venta <span class="required-star">*</span></label>
+                        <input type="number" id="product-price" required step="0.01" class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div>
+                        <label for="product-image-url" class="block text-sm font-medium text-gray-400">URL de la Imagen</label>
+                        <input type="url" id="product-image-url" class="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 shadow-sm p-2">
+                    </div>
+                    <div id="form-buttons" class="md:col-span-2 flex justify-end space-x-4 mt-4">
+                        <button type="submit" id="save-product-button" class="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition-all">Guardar Producto</button>
+                        <button type="button" id="reset-form-button" class="bg-gray-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-gray-700 transition-all">Limpiar</button>
+                    </div>
+                </form>
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-white mb-4">Cargar Productos desde CSV</h3>
+                    <div class="flex items-center space-x-4">
+                        <input type="file" id="csv-file" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+                        <button id="upload-csv-button" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-all">Subir CSV</button>
+                    </div>
+                    <p id="loading-message" class="text-center text-sm text-gray-400 mt-4 hidden">Cargando productos...</p>
+                </div>
+            </div>
+
+            <div id="sales-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-7xl mx-auto my-8 hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Registrar Venta</h2>
+                <div class="flex justify-between items-center mb-6">
+                    <input type="text" id="sales-search-input" placeholder="Buscar productos..." class="w-full md:w-1/3 p-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-gray-800 rounded-xl">
+                        <thead>
+                            <tr class="bg-gray-700 text-gray-400 uppercase text-sm leading-normal">
+                                <th class="py-3 px-4 text-left rounded-tl-xl">Imagen</th>
+                                <th class="py-3 px-4 text-left">Nombre</th>
+                                <th class="py-3 px-4 text-left">Marca</th>
+                                <th class="py-3 px-4 text-left">Stock</th>
+                                <th class="py-3 px-4 text-left">Precio de Venta</th>
+                                <th class="py-3 px-4 text-left rounded-tr-xl">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-table-body" class="text-sm font-light">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="reports-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-7xl mx-auto my-8 hidden">
+                <h2 class="text-2xl font-semibold mb-4 text-white text-center">Generar Reportes</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gray-700 p-6 rounded-lg shadow-md text-center">
+                        <h3 class="text-xl font-semibold mb-4 text-white">Reporte de Ventas</h3>
+                        <div class="flex flex-col space-y-2">
+                            <button id="sales-report-today" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all">Ventas de Hoy</button>
+                            <button id="sales-report-month" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all">Ventas del Mes</button>
+                            <button id="sales-report-year" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all">Ventas del Año</button>
+                        </div>
+                    </div>
+                    <div class="bg-gray-700 p-6 rounded-lg shadow-md text-center">
+                        <h3 class="text-xl font-semibold mb-4 text-white">Reporte de Ganancias</h3>
+                        <button id="sales-report-profit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all">Ganancias del Día</button>
+                    </div>
+                    <div class="bg-gray-700 p-6 rounded-lg shadow-md text-center">
+                        <h3 class="text-xl font-semibold mb-4 text-white">Reporte de Inventario</h3>
+                        <button id="export-low-stock-pdf-button" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-all">Inventario Bajo</button>
+                    </div>
+                </div>
+            </div>
+             <div id="users-management-section" class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-7xl mx-auto my-8 hidden">
+    <h2 class="text-2xl font-semibold mb-6 text-white text-center">Administración de Roles de Usuario</h2>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-gray-800 rounded-xl">
+            <thead>
+                <tr class="bg-gray-700 text-gray-400 uppercase text-sm leading-normal">
+                    <th class="py-3 px-4 text-left rounded-tl-xl">Correo Electrónico</th>
+                    <th class="py-3 px-4 text-left">Estado (UID)</th>
+                    <th class="py-3 px-4 text-left rounded-tr-xl">Rol Asignado</th>
+                    <th class="py-3 px-4 text-left">Acción</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body" class="text-sm font-light">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+        </div>
+    </div>
+    
+    <div id="sales-report-section" class="bg-white p-6 rounded-xl shadow-2xl max-w-4xl mx-auto my-8 text-gray-900 hidden">
+        <h2 id="sales-report-title" class="text-2xl font-bold text-center mb-4"></h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded-xl">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700 uppercase text-xs leading-normal">
+                        <th class="py-3 px-4 text-left">Nombre</th>
+                        <th class="py-3 px-4 text-left">Cantidad</th>
+                        <th class="py-3 px-4 text-left">Precio de Venta</th>
+                        <th class="py-3 px-4 text-left">Fecha de Venta</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-report-table-body" class="text-sm font-light">
+                </tbody>
+            </table>
+        </div>
+        <p id="sales-report-total" class="text-lg font-bold text-right mt-4"></p>
+    </div>
+
+    <div id="profit-report-section" class="bg-white p-6 rounded-xl shadow-2xl max-w-4xl mx-auto my-8 text-gray-900 hidden">
+        <h2 id="profit-report-title" class="text-2xl font-bold text-center mb-4"></h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded-xl">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700 uppercase text-xs leading-normal">
+                        <th class="py-3 px-4 text-left">Nombre</th>
+                        <th class="py-3 px-4 text-left">Cantidad</th>
+                        <th class="py-3 px-4 text-left">Precio de Venta</th>
+                        <th class="py-3 px-4 text-left">Costo</th>
+                        <th class="py-3 px-4 text-left">Ganancia</th>
+                        <th class="py-3 px-4 text-left">Fecha de Venta</th>
+                    </tr>
+                </thead>
+                <tbody id="profit-report-table-body" class="text-sm font-light">
+                </tbody>
+            </table>
+        </div>
+        <p id="profit-report-total" class="text-lg font-bold text-right mt-4"></p>
+    </div>
+
+    <div id="low-stock-report-section" class="bg-white p-6 rounded-xl shadow-2xl max-w-4xl mx-auto my-8 text-gray-900 hidden">
+        <h2 class="text-2xl font-bold text-center mb-4">Reporte de Inventario Bajo (&lt;10 Unidades)</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white rounded-xl">
+                <thead>
+                    <tr class="bg-red-50 text-red-700 uppercase text-xs leading-normal">
+                        <th class="py-3 px-4 text-left rounded-tl-xl">Imagen</th>
+                        <th class="py-3 px-4 text-left">Nombre</th>
+                        <th class="py-3 px-4 text-left">Marca</th>
+                        <th class="py-3 px-4 text-left">Stock</th>
+                        <th class="py-3 px-4 text-left">Proveedor</th>
+                        <th class="py-3 px-4 text-left rounded-tr-xl">Precio de Venta</th>
+                    </tr>
+                </thead>
+                <tbody id="low-stock-table-body" class="bg-white divide-y divide-gray-200">
+                </tbody>
+            </table>
+        </div>   
+    </div>
+    
+    <div id="confirmation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-xl w-80 text-center">
+            <p id="modal-message" class="text-lg font-semibold mb-4 text-white"></p>
+            <div class="flex justify-around">
+                <button id="cancel-button" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="confirm-button" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js" type="module"></script>
+</body>
+</html>
